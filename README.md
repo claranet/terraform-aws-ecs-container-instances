@@ -1,6 +1,6 @@
 # terraform-aws-ecs-container-instances
 
-This module is used to create an Auto Scaling Group of ECS container instances. It works with [terraform-aws-ecs-service-pipeline](https://github.com/claranet/terraform-aws-ecs-service-pipeline) for deploying ECS services [terraform-aws-asg-pipeline](https://github.com/claranet/terraform-aws-asg-pipeline) for deploying new AMIs.
+This module is used to create an Auto Scaling Group of ECS container instances. It works with [terraform-aws-ecs-service-pipeline](https://github.com/claranet/terraform-aws-ecs-service-pipeline) for deploying ECS services on top of these container instances, and [terraform-aws-asg-pipeline](https://github.com/claranet/terraform-aws-asg-pipeline) for deploying new AMIs to these container instances.
 
 ## Overview
 
@@ -19,11 +19,12 @@ The following diagram shows how we have used this module to handle AMI deploymen
 ## Creating a pipeline
 
 1. Use this module in one or more environments.
-2. Not supplied: Create an S3 bucket to use for AMI manifests and do something like:
-    * Use Packer to build custom AMIs and write the manifest to the S3 bucket.
-    * Attach a Lambda function to [Amazon ECS-optimized AMI update notifications](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS-AMI-SubscribeTopic.html) and upload a fake Packer manifest to the S3 bucket.
+2. Use the `s3-source` module from [terraform-aws-asg-pipeline](https://github.com/claranet/terraform-aws-asg-pipeline) to create an S3 bucket for manifests of AMIs to be deployed by the pipeline.
+    * Or create the S3 bucket yourself. You'll just need to build the simple `source_location` object to pass into the `pipeline` module.
 3. Use the `pipeline` module from [terraform-aws-asg-pipeline](https://github.com/claranet/terraform-aws-asg-pipeline) to create a pipeline.
     * Specify `type=ami`.
-    * Pass in the S3 bucket details as the `source_location`.
+    * Pass in the S3 source details as the `source_location`.
     * Pass in the `pipeline_target` output from anywhere you used this module.
-4. Trigger the pipeline by running Packer or waiting for AMI update notifications.
+4. Not included: Write AMI manifests to the S3 bucket location to trigger the pipeline.
+    * Use Packer to build a custom AMI and upload a zipped manifest to the S3 bucket.
+    * Attach a Lambda function to [Amazon ECS-optimized AMI update notifications](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS-AMI-SubscribeTopic.html) and upload a fake Packer manifest to the S3 bucket, to roll out the new AMI automatically when AWS releases them.
