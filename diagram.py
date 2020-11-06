@@ -1,5 +1,5 @@
 from diagrams import Cluster, Diagram, Edge
-from diagrams.aws.compute import EC2
+from diagrams.aws.compute import EC2, ECR, ECS, Compute
 from diagrams.aws.devtools import Codebuild, Codepipeline
 from diagrams.aws.management import AutoScaling, Cloudformation
 from diagrams.aws.storage import S3
@@ -60,3 +60,86 @@ with Diagram("ECS Container Instances Pipeline", filename="diagram", outformat="
     pipeline_dev >> red() >> cfn_dev >> red() >> asg_dev >> red() >> ec2_dev
     ec2_staging << red() << asg_staging << red() << cfn_staging << red() << pipeline_staging
     pipeline_prod >> red() >> cfn_prod >> red() >> asg_prod >> red() >> ec2_prod
+
+with Diagram("ECS Service and Container Instances Pipelines", filename="diagram-with-services", outformat="png"):
+
+    github = Github("GitHub Actions\nImage Build")
+
+    with Cluster("Management AWS Account"):
+
+        codebuild = Codebuild("CodeBuild\nPacker AMI")
+
+        with Cluster("Container Instances Pipeline Module"):
+            asg_pipeline_dev = Codepipeline("Deploy to\nDev")
+            asg_pipeline_staging = Codepipeline("Deploy to\nStaging")
+            asg_pipeline_prod = Codepipeline("Deploy to\nProd")
+
+        with Cluster("Service Pipeline Module"):
+            ecs_pipeline_dev = Codepipeline("Deploy to\nDev")
+            ecs_pipeline_staging = Codepipeline("Deploy to\nStaging")
+            ecs_pipeline_prod = Codepipeline("Deploy to\nProd")
+
+    with Cluster("Development AWS Account"):
+        with Cluster("Container Instances Module"):
+            asg_dev = AutoScaling("Container Instances")
+        with Cluster("Service Module"):
+            ecs_dev = ECS("ECS Service")
+
+    with Cluster("Staging AWS Account"):
+        with Cluster("Container Instances Module"):
+            asg_staging = AutoScaling("Container Instances")
+        with Cluster("Service Module"):
+            ecs_staging = ECS("ECS Service")
+
+    with Cluster("Production AWS Account"):
+        with Cluster("Container Instances Module"):
+            asg_prod = AutoScaling("Container Instances")
+        with Cluster("Service Module"):
+            ecs_prod = ECS("ECS Service")
+
+    (
+        codebuild
+        >> asg_pipeline_dev
+        >> asg_pipeline_staging
+        >> asg_pipeline_prod
+    )
+
+    (
+        github
+        >> ecs_pipeline_dev
+        >> ecs_pipeline_staging
+        >> ecs_pipeline_prod
+    )
+
+    if 2 > 1:
+        ecs_dev >> green(style="dashed") >> asg_dev
+    else:
+        asg_dev << green(style="dashed") << ecs_dev
+    if 2 > 1:
+        asg_pipeline_dev >> red() >> asg_dev
+        ecs_pipeline_dev >> green() >> ecs_dev
+    else:
+        asg_dev << red() << asg_pipeline_dev
+        ecs_dev << green() << ecs_pipeline_dev
+
+    if 2 > 1:
+        ecs_staging >> green(style="dashed") >> asg_staging
+    else:
+        asg_staging << green(style="dashed") << ecs_staging
+    if 2 < 1:
+        asg_pipeline_staging >> red() >> asg_staging
+        ecs_pipeline_staging >> green() >> ecs_staging
+    else:
+        asg_staging << red() << asg_pipeline_staging
+        ecs_staging << green() << ecs_pipeline_staging
+
+    if 2 > 1:
+        ecs_prod >> green(style="dashed") >> asg_prod
+    else:
+        asg_prod << green(style="dashed") << ecs_prod
+    if 2 > 1:
+        ecs_pipeline_prod >> green() >> ecs_prod
+        asg_pipeline_prod >> red() >> asg_prod
+    else:
+        ecs_prod << green() << ecs_pipeline_prod
+        asg_prod << red() << asg_pipeline_prod

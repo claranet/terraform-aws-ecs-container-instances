@@ -16,6 +16,10 @@ The following diagram shows how we have used this module to handle AMI deploymen
 
 ![Diagram](diagram.png?raw=true)
 
+The following diagram shows at a higher level how we have used this module in conjunction with the [terraform-aws-ecs-service-pipeline](https://github.com/claranet/terraform-aws-ecs-service-pipeline) module to provide a complete ECS-on-EC2 solution.
+
+![Diagram](diagram-with-services.png?raw=true)
+
 ## Creating a pipeline
 
 1. Use this module in one or more environments.
