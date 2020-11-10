@@ -29,7 +29,7 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([{
     name  = "cwagent"
-    image = "amazon/cloudwatch-agent:1.247345.36b249270"
+    image = "amazon/cloudwatch-agent:1.247346.1b249759"
     mountPoints = [
       { readOnly = true, containerPath = "/cgroup", sourceVolume = "al1_cgroup" },
       { readOnly = true, containerPath = "/rootfs/cgroup", sourceVolume = "al1_cgroup" },
@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "this" {
       { readOnly = true, containerPath = "/sys/fs/cgroup", sourceVolume = "al2_cgroup" },
     ]
     environment = [
-      { name = "USE_DEFAULT_CONFIG", value = "True" }
+      { name = "CW_CONFIG_CONTENT", value = file("${path.module}/amazon-cloudwatch-agent.json") }
     ]
     logConfiguration = {
       logDriver = "awslogs",

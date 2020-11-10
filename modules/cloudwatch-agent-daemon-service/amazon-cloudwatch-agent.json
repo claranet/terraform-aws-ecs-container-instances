@@ -1,0 +1,33 @@
+{
+  "agent": {
+    "omit_hostname": true
+  },
+  "logs": {
+    "metrics_collected": {
+      "ecs": {}
+    }
+  },
+  "metrics": {
+    "append_dimensions": {
+      "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+      "InstanceId": "${aws:InstanceId}"
+    },
+    "aggregation_dimensions": [
+      [
+        "AutoScalingGroupName",
+        "path"
+      ]
+    ],
+    "metrics_collected": {
+      "disk": {
+        "resources": [
+          "/"
+        ],
+        "measurement": [
+          "used_percent"
+        ],
+        "drop_device": true
+      }
+    }
+  }
+}
