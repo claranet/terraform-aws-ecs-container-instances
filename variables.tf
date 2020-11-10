@@ -1,3 +1,20 @@
+variable "alarms" {
+  description = "Configures a CloudWatch alarm for when disks are full."
+  type = object({
+    disk_used_percent = object({
+      threshold                 = number
+      period                    = number
+      evaluation_periods        = number
+      datapoints_to_alarm       = number
+      treat_missing_data        = string
+      alarm_actions             = list(string)
+      ok_actions                = list(string)
+      insufficient_data_actions = list(string)
+    })
+  })
+  default = null
+}
+
 variable "boot_timeout_seconds" {
   description = "The time allowed for instances to boot before giving up."
   type        = number

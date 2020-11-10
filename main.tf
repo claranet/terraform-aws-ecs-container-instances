@@ -97,3 +97,30 @@ module "cloudwatch_agent" {
 
   cluster_name = var.cluster_name
 }
+
+resource "aws_cloudwatch_metric_alarm" "disk_used_percent" {
+  count = var.alarms != null ? lookup(var.alarms, "disk_used_percent", null) != null ? 1 : 0 : 0
+
+  alarm_name        = "${module.asg.asg_name}-disk-usage"
+  alarm_description = "This alarm triggers when any EC2 instance in the ${module.asg.asg_name} auto scaling group has high disk usage."
+
+  namespace = "CWAgent"
+  dimensions = {
+    AutoScalingGroupName = module.asg.asg_name
+    path                 = "/"
+  }
+  statistic           = "Maximum"
+  metric_name         = "disk_used_percent"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.alarms["disk_used_percent"].threshold
+  period              = var.alarms["disk_used_percent"].period
+  evaluation_periods  = var.alarms["disk_used_percent"].evaluation_periods
+  datapoints_to_alarm = var.alarms["disk_used_percent"].datapoints_to_alarm
+  unit                = "Percent"
+
+  treat_missing_data = var.alarms["disk_used_percent"].treat_missing_data
+
+  alarm_actions             = var.alarms["disk_used_percent"].alarm_actions
+  ok_actions                = var.alarms["disk_used_percent"].ok_actions
+  insufficient_data_actions = var.alarms["disk_used_percent"].insufficient_data_actions
+}
